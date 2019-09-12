@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqut.mapper.TeacherMapper">
+	<resultMap type="teacher" id="teacherMap">
+		<id column="id" property="id"/>
+		<result column="num" property="num"/>
+		<result column="uname" property="uname"/>
+		<result column="pwd" property="pwd"/>
+		<result column="institute" property="institute"/>
+		<result column="rid" property="rid"/>
+		<result column="iconName" property="iconName"/>
+		<collection property="permissions" column="rid" select="com.cqut.mapper.PermissionMapper.findPermissions"/>
+	</resultMap>
+	
+	<select id="findByNum" resultMap="teacherMap">
+		SELECT id,num,uname,pwd,institute,rid,iconName FROM teacher WHERE num = #{num};
+	</select>
+	
+	<select id="showStudents" resultType="student">
+		SELECT  id,num,uname,institute FROM student LIMIT #{pageNum},#{pageSize};
+	</select>
+	
+	<select id="findStudentByNum" resultType="student">
+		SELECT  id,num,uname,institute FROM student where num = #{num};
+	</select>
+	
+	<select id="findStudentByUname" resultType="student">
+		SELECT  id,num,uname,institute FROM student where uname like '%#{num}%' LIMIT #{pageNum},#{pageSize};
+	</select>
+	
+	<select id="countStudents" resultType="int">
+		SELECT COUNT(*) FROM student;
+	</select>
+	
+	<select id="getRole" resultType="string">
+		SELECT rname FROM roles WHERE id = #{rid};
+	</select>
+	
+	
+	<update id="updatePwdById">
+		UPDATE teacher SET pwd=#{pwd} where id = #{id};
+	</update>
+	
+	<update id="updateIconById">
+		UPDATE teacher SET iconName=#{iconName} where id = #{id};
+	</update>
+</mapper>

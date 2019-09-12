@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqut.mapper.StudentMapper">
+	<update id="updatePwdById">
+		UPDATE student SET pwd=#{pwd} where id = #{id};
+	</update>
+	
+	<update id="updateIconById">
+		UPDATE student SET iconName=#{iconName} where id = #{id};
+	</update>
+	
+	<resultMap type="student" id="studnetMap">
+		<id column="id" property="id"/>
+		<result column="num" property="num"/>
+		<result column="uname" property="uname"/>
+		<result column="pwd" property="pwd"/>
+		<result column="institute" property="institute"/>
+		<result column="rid" property="rid"/>
+		<result column="iconName" property="iconName"/>
+		<collection property="permissions" column="rid" select="com.cqut.mappper.PermissionMapper.findPermissions"/>
+	</resultMap>
+	<select id="findByNum" resultMap="studnetMap">
+		SELECT id,num,uname,pwd,institute,rid,iconName FROM student WHERE num = #{num};
+	</select>
+	
+	<select id="getRole" resultType="string">
+		SELECT rname FROM roles WHERE id = #{rid};
+	</select>
+</mapper>

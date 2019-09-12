@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqut.mapper.AdminMapper">
+	<resultMap type="admin" id="adminMap">
+		<result column="num" property="num"/>
+		<result column="uname" property="uname"/>
+		<result column="pwd" property="pwd"/>
+		<result column="rid" property="rid"/>
+		<result column="iconName" property="iconName"/>
+		<collection property="permissions" column="rid" select="com.cqut.mapper.PermissionMapper.findPermissions"/>
+	</resultMap>
+	
+	<select id="findByNum" resultMap="adminMap">
+		SELECT  id,num,uname,pwd,rid,iconName FROM admin WHERE num = #{num};
+	</select>
+	
+	<select id="showTeachers" resultType="teacher">
+		SELECT  id,num,uname,institute FROM teacher LIMIT #{pageNum},#{pageSize};
+	</select>
+	
+	<select id="findTeacherByNum" resultType="teacher">
+		SELECT  id,num,uname,institute FROM teacher WHERE num = #{num} LIMIT #{pageNum},#{pageSize};
+	</select>
+	
+	<select id="findTeacherByUname" resultType="teacher">
+		SELECT  id,num,uname,institute FROM teacher WHERE uname LIKE CONCAT('%',#{uname},'%') LIMIT #{pageNum},#{pageSize};
+	</select>
+	
+	<select id="showStudents" resultType="student">
+		SELECT id,num,uname,institute FROM student LIMIT #{pageNum},#{pageSize};
+	</select>
+	
+	<select id="findStudentByNum" resultType="student">
+		SELECT  id,num,uname,institute FROM student WHERE num = #{num} LIMIT #{pageNum},#{pageSize};
+	</select>
+	
+	<select id="findStudentByUname" resultType="student">
+		SELECT  id,num,uname,institute FROM student WHERE uname LIKE CONCAT('%',#{uname},'%') LIMIT #{pageNum},#{pageSize};
+	</select>
+	
+	<select id="countTeachers" resultType="int">
+		SELECT COUNT(*) FROM teacher;
+	</select>
+	
+	<select id="countStudents" resultType="int">
+		SELECT COUNT(*) FROM student;
+	</select>
+	
+	<select id="countTeachersByNum" resultType="int">
+		SELECT COUNT(*) FROM teacher WHERE num = #{num};;
+	</select>
+	
+	<select id="countStudentsByNum" resultType="int">
+		SELECT COUNT(*) FROM student WHERE num = #{num};
+	</select>
+	
+	<select id="countTeachersByUname" resultType="int">
+		SELECT COUNT(*) FROM teacher WHERE uname LIKE CONCAT('%',#{uname},'%');
+	</select>
+	
+	<select id="countStudentsByUname" resultType="int">
+		SELECT COUNT(*) FROM student WHERE uname LIKE CONCAT('%',#{uname},'%');
+	</select>
+	
+	
+	<select id="getRole" resultType="string">
+		SELECT rname FROM roles WHERE id = #{rid};
+	</select>
+	
+	<select id="findStudentNoPermissions" resultType="string">
+		SELECT uname FROM student where num = #{num};
+	</select>
+	
+	<select id="findTeacherNoPermissions" resultType="string">
+		SELECT uname FROM teacher where num = #{num};
+	</select>
+	
+	<delete id="deleteTeacher">
+		DELETE FROM teacher WHERE id = #{id};
+	</delete>
+	
+	<delete id="deleteTeachers">
+		DELETE FROM teacher WHERE id in 
+		<foreach item="id" collection="ids" open="(" separator="," close=");">
+			${id}
+		</foreach>
+	</delete>
+	
+	<delete id="deleteStudent">
+		DELETE FROM student WHERE id = #{id};
+	</delete>
+	
+	<delete id="deleteStudents">
+		DELETE FROM student WHERE id in 
+		<foreach item="id" collection="ids" open="(" separator="," close=");">
+			${id}
+		</foreach>
+	</delete>
+	
+	<update id="updatePwdById">
+		UPDATE admin SET pwd=#{pwd} where id = #{id};
+	</update>
+	
+	<update id="updateIconById">
+		UPDATE admin SET iconName=#{iconName} where id = #{id};
+	</update>
+	
+	<update id="updateTeacherInfo">
+		UPDATE  teacher SET num=#{num},uname=#{uname},institute=#{institute} WHERE id = #{id};
+	</update>
+	
+	<update id="updateStudentInfo">
+		UPDATE  student SET num=#{num},uname=#{uname},institute=#{institute} WHERE id = #{id};
+	</update>
+	
+	<insert id="addTeacher">
+		INSERT INTO teacher (id,num,uname,salt,pwd,institute,rid) VALUES(DEFAULT,#{num},#{uname},#{num},#{pwd},#{institute},2);
+	</insert>
+	
+	<insert id="addStudent">
+		INSERT INTO student (id,num,uname,salt,pwd,institute,rid) VALUES(DEFAULT,#{num},#{uname},#{num},#{pwd},#{institute},3);
+	</insert>
+</mapper>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+	<!-- 认证匹配器 -->
+	<bean id="credentialsMatcher" class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+		<property name="hashAlgorithmName" value="md5"/>
+		<property name="hashIterations" value="1"/>
+	</bean>
+	
+	<!-- 自定义realm -->
+	<bean id="adminRealm" class="com.cqut.shiro.AdminRealm">
+		<property name="credentialsMatcher" ref="credentialsMatcher"/>
+	</bean>
+	<bean id="teacherRealm" class="com.cqut.shiro.TeacherRealm">
+		<property name="credentialsMatcher" ref="credentialsMatcher"/>
+	</bean>
+	<bean id="studentRealm" class="com.cqut.shiro.StudentRealm">
+		<property name="credentialsMatcher" ref="credentialsMatcher"/>
+	</bean>
+	
+	<!-- 定义认证策略 -->
+	<bean id="authenticationStrategy" class="org.apache.shiro.authc.pam.AtLeastOneSuccessfulStrategy"></bean>
+	<!-- 自定义认证器 -->
+	<bean id="authenticator" class="com.cqut.shiro.MyModularRealmAuthenticator">
+		<property name="authenticationStrategy" ref="authenticationStrategy"/>
+		<property name="realms">
+			<list>
+				<ref bean="adminRealm"/>
+				<ref bean="teacherRealm"/>
+				<ref bean="studentRealm"/>
+			</list>
+		</property>
+	</bean> 
+	<!-- 设置授权器 -->
+	<bean id="authorizer" class="org.apache.shiro.authz.ModularRealmAuthorizer">
+		<property name="realms">
+			<list>
+				<ref bean="adminRealm"/>
+				<ref bean="teacherRealm"/>
+				<ref bean="studentRealm"/>
+			</list>
+		</property>
+	</bean>
+	
+	<!--配置会话管理器-->
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <!--shiro自带（session）会话信息保存时间 单位：毫秒-->
+       <property name="globalSessionTimeout" value="360000"/>
+        <!--自动清除过期会话信息-->
+        <property name="deleteInvalidSessions" value="true"/>
+    </bean>
+
+	<!--配置缓存器（原因每次仅需要验证权限实都需要去数据库查询重新授权就，效率降低）-->
+     <bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager"></bean>
+    <!--配置记住cookie-->
+    <bean id="rememberMeCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <!--设置cookie存活时间（一星期）单位：秒-->
+        <property name="maxAge" value="604800"/>
+        <!--设置cookie名称-->
+        <property name="name" value="rememberMe"/>
+    </bean>
+    
+    <!--配置记住我管理器-->
+    <bean id="rememberMeManager" class="org.apache.shiro.web.mgt.CookieRememberMeManager">
+        <property name="cookie" ref="rememberMeCookie"/>
+    </bean>
+    
+	<!-- 配置securityManager -->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="authenticator" ref="authenticator"/>
+		<property name="authorizer" ref="authorizer"/>
+		<property name="sessionManager" ref="sessionManager"/>
+		<property name="cacheManager" ref="cacheManager"/>
+		<property name="rememberMeManager" ref="rememberMeManager"/>
+	</bean>  
+	
+	<!-- 配置过滤器 -->
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<property name="securityManager" ref="securityManager"/>
+		<property name="loginUrl" value="/view/public/index.jsp"/>
+		<property name="unauthorizedUrl" value="/view/public/refuse.jsp"/>
+		<!-- 配置过滤器链 --> 
+		<property name="filterChainDefinitions">
+			<value>
+				/easyui/**=anon
+				/image/**=anon
+				/common/login=anon 
+				/common/logout=logout
+				/view/public/**=anon
+				/view/system/main.jsp=user
+				/view/admin/**=roles[管理员]
+				/view/teacher/**=roles[教师]
+				/view/student/**=roles[学生]
+				/**=authc
+			</value>
+		</property>
+	</bean>
+</beans>
